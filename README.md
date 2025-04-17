@@ -25,5 +25,8 @@ intelxed, https://github.com/intelxed/xed, used for dynamically decoding the cur
 this code would jump to invalid memory and so the library's attempt to read the return address would result in a segmentation fault.
 
 
+ps, the code quality is terrible and i'm not going to fix it because i've basically gotten what i wanted from this program.
+
+
 
 
