@@ -34,6 +34,7 @@ void signal_problem(int signum){
     long long buf[1] = {0xdeadbeef};
     buf[25] += instruction_length((uint8_t*)buf[25]);
     //printf("stack leaking now: %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x\n\n\n");
+    //printf("buf[25] addr: 0x%08x\nframe addr: 0x%08x\n", &buf[25],(long long) __builtin_stack_address());
     if (++segfault_count >= 2<<24){
       printf("yeah you're trapped dude\n");
       exit(0);
