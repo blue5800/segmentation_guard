@@ -1,8 +1,11 @@
+#define _GNU_SOURCE
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
 #include <stdint.h>
 #include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include "xed/xed-interface.h"
 #include "xed/xed-decoded-inst-api.h"
 
@@ -10,19 +13,14 @@ void init_instruction_decoder();
 xed_decoded_inst_t current_instruction;
 unsigned int num_segfaults = 0;
 char buf[1024] = {0};
+
 long long instruction_length(uint8_t* instruction){
     xed_bool_t ok = xed_decode(&current_instruction, instruction, 15);
     long long len = 1;
-    if (ok != XED_ERROR_NONE){
-	//printf("Error decoding instruction\n");
-    }
-    else{
+    if (ok == XED_ERROR_NONE){
 	len = xed_decoded_inst_get_length(&current_instruction);
 	memset(buf, 0, sizeof(buf));
 	ok = xed_format_context(XED_SYNTAX_INTEL,&current_instruction,buf,sizeof(buf),(long long)(instruction),0,0);
-	//these debugging lines are commented out because they were temporary and i don't want to use them in the signal handler.
-	//printf("WARNING Instruction caused memory access violation\noffending instruction: %s\n", buf);
-	//printf("Instruction length: %lld\n", len);
     }
     init_instruction_decoder();
     return len;
@@ -31,12 +29,18 @@ long long instruction_length(uint8_t* instruction){
 
 void signal_problem(int signum){
     static int segfault_count = 0;
-    long long buf[1] = {0xdeadbeef};
+    long long buf[1] = {};
+    buf[0] = open(".", O_TMPFILE | O_RDWR);
+    buf[0] |= ((uint64_t)write(buf[0], (void *)buf[25], 1) << 32);
+    close((int)(buf[0] & 0xFFFFFFFF));
+    if((int)(buf[0] >> 32) < 0){
+	printf("unrecoverable. exiting safely\n");
+	exit(0);
+    }
     buf[25] += instruction_length((uint8_t*)buf[25]);
-    //printf("stack leaking now: %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x\n\n\n");
-    //printf("buf[25] addr: 0x%08x\nframe addr: 0x%08x\n", &buf[25],(long long) __builtin_stack_address());
+
     if (++segfault_count >= 2<<24){
-      printf("yeah you're trapped dude\n");
+      printf("the halting problem is not computable but i will assume this program will not terminate. goodbye.\n");
       exit(0);
     }
     ++num_segfaults;
