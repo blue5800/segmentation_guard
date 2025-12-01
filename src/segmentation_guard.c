@@ -30,17 +30,15 @@ long long instruction_length(uint8_t* instruction){
 void signal_problem(int signum){
     static int segfault_count = 0;
     long long buf[1] = {};
-    buf[0] = open(".", O_TMPFILE | O_RDWR);
+    buf[0] = open("/tmp", O_TMPFILE | O_RDWR);
     buf[0] |= ((uint64_t)write(buf[0], (void *)buf[25], 1) << 32);
     close((int)(buf[0] & 0xFFFFFFFF));
     if((int)(buf[0] >> 32) < 0){
-	printf("unrecoverable. exiting safely\n");
 	exit(0);
     }
     buf[25] += instruction_length((uint8_t*)buf[25]);
 
-    if (++segfault_count >= 2<<24){
-      printf("the halting problem is not computable but i will assume this program will not terminate. goodbye.\n");
+    if (++segfault_count >= 1<<7){
       exit(0);
     }
     ++num_segfaults;
