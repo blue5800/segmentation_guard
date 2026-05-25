@@ -1,0 +1,20 @@
+# Build artifacts
+out/
+*.o
+*.a
+*.so
+
+# Intel XED build kit
+xed_kit/
+
+# XED submodule internal build objects
+xed/*
+mbuild/*
+
+# Temporary files
+*~
+*.swp
+*.log
+
+# OS-specific
+.DS_Store
