@@ -2,6 +2,10 @@
 
 A low-level C library that attempts to keep your program alive by catching segmentation faults, decoding the offending instruction, and skipping over it. It forces a return when the program calls invalid memory, such as a null function pointer.
 
+## Warning
+
+NEVER use this library in production. it is built to rely on extreme undefined behavior, and there is no guarantee that it will work in your environment. Furthermore, the entire premise of the library is fundamentally unsafe; skipping faulty instructions WILL lead to undefined behavior and unreliable output. This library exists purely for educational and entertainment purposes. If one wanted this functionality, it should be implemented using `sigaction` instead of the legacy `signal` api, as `sigaction` provides a `ucontext_t` structure which can be used to safely gather context without relying on undefined stack hacks. However, I implemented it this way for aesthetic purposes, as it is objectively cool.   
+
 ## Features
 
 - **Automatic Fault Recovery:** Catches `SIGSEGV` signals and prevents the process from terminating immediately.
