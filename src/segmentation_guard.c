@@ -37,8 +37,8 @@ long long find_ret(){
 // -Wunused-parameter, but dw i know what i'm doing fr 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Warray-bounds"
 void signal_problem(int signum){    
-#pragma GCC diagnostic pop
     volatile long long buf[1] = {};
 
     if (num_segfaults++ >= 1<<7) _exit(0);
@@ -55,6 +55,8 @@ void signal_problem(int signum){
 end:
     close(buf[0] & 0xffffffff);
 }
+#pragma GCC diagnostic pop
+
 
 void init_instruction_decoder(){
     static int initialized = 0;
