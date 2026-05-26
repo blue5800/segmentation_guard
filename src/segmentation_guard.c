@@ -9,8 +9,8 @@
 #include <sys/auxv.h>
 #include "xed/xed-interface.h"
 #include "xed/xed-decoded-inst-api.h"
-#include <string.h>
 #include <sys/mman.h>
+
 void init_instruction_decoder();
 xed_decoded_inst_t current_instruction;
 unsigned int num_segfaults = 0;
