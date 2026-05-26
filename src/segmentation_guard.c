@@ -48,9 +48,11 @@ void signal_problem(int signum){
 
     if((int)(buf[0] >> 32) < 0){
 	buf[25] = find_ret();
-	return;
+	goto end;
     }
     buf[25] += instruction_length((uint8_t*)buf[25]);
+
+end:
     close(buf[0] & 0xffffffff);
 }
 
