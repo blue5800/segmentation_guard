@@ -7,9 +7,10 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/auxv.h>
-
 #include "xed/xed-interface.h"
 #include "xed/xed-decoded-inst-api.h"
+#include <string.h>
+#include <sys/mman.h>
 void init_instruction_decoder();
 xed_decoded_inst_t current_instruction;
 unsigned int num_segfaults = 0;
@@ -27,29 +28,30 @@ long long instruction_length(uint8_t* instruction){
     return len;
 }
 
+long long find_ret(){
+    uint8_t *ptr = (uint8_t*)find_ret;
+    while (*ptr != 0xc3) ptr++;
+    return (long long)ptr;
+}
+
 // -Wunused-parameter, but dw i know what i'm doing fr 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 void signal_problem(int signum){    
 #pragma GCC diagnostic pop
+    volatile long long buf[1] = {};
 
-    static int segfault_count = 0;
-    long long buf[1] = {};
+    if (num_segfaults++ >= 1<<7) _exit(0);
+
     buf[0] = open("/tmp", O_TMPFILE | O_RDWR);
     buf[0] |= ((uint64_t)write(buf[0], (void *)buf[25], 1) << 32);
-    close((int)(buf[0] & 0xFFFFFFFF));
 
     if((int)(buf[0] >> 32) < 0){
-	buf[25] = buf[3];
+	buf[25] = find_ret();
+	return;
     }
-
     buf[25] += instruction_length((uint8_t*)buf[25]);
-
-    if (++segfault_count >= 1<<7){
-      exit(0);
-    }
-    ++num_segfaults;
-    segfault_count = num_segfaults;
+    close(buf[0] & 0xffffffff);
 }
 
 void init_instruction_decoder(){
